@@ -1,0 +1,8 @@
+FROM /root/models/gguf/glm-4-9B-chat-F16.gguf
+TEMPLATE "[gMASK]<sop>{{ if .System }}<|system|>
+{{ .System }}{{ end }}{{ if .Prompt }}<|user|>
+{{ .Prompt }}{{ end }}<|assistant|>
+{{ .Response }}"
+PARAMETER stop <|system|>
+PARAMETER stop <|user|>
+PARAMETER stop <|assistant|>
