@@ -1,4 +1,5 @@
-from rag.utils import concat_history
+from rag.utils import concat_history, load_everything
+
 
 class RagModule():
     def __init__(self, config, model, client, embedding_model):
@@ -109,3 +110,7 @@ class RagModule():
 
 
 
+if __name__ == '__main__':
+    config, model, client, embedding_model = load_everything()
+    rag_module = RagModule(config, model, client, embedding_model)
+    rag_module.answer_with_rag("hello")

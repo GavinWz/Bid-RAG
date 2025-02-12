@@ -15,10 +15,10 @@ def run():
     output = llm.generate("Hello, my name is")
     print(output)
 
-def open_ai_generate(messages, api_key="dummy", base_url="http://localhost:7100/v1", stream=True):
+def open_ai_generate(messages, model="glm4-9b-pt", api_key="dummy", base_url="http://localhost:7100/v1", stream=True):
     client = OpenAI(api_key=api_key, base_url=base_url)
     response = client.chat.completions.create(
-        model="glm4-9b-pt",
+        model=model,
         messages=messages,
         temperature=0.5,
         stream=True
