@@ -1,0 +1,11 @@
+# config.yaml
+
+served-model-name: "glm4-9b-pt"
+host: "0.0.0.0"
+port: 7100
+max-model-len: 40960
+gpu-memory-utilization: 0.8
+task: "generate"
+dtype: "float16"
+trust-remote-code: true
+

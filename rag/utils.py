@@ -6,6 +6,8 @@ import os
 from langchain_ollama import ChatOllama
 from pymilvus import MilvusClient
 from sentence_transformers import SentenceTransformer
+from vllm import LLM
+
 from rag.config import Config
 
 
@@ -15,10 +17,19 @@ def load_config():
 
 
 def load_model(config):
-    model = ChatOllama(
-        model=config.model,
-        temperature=config.temperature,
-        num_predict=config.num_predict,
+    # model = ChatOllama(
+    #     model=config.model,
+    #     temperature=config.temperature,
+    #     num_predict=config.num_predict,
+    # )
+
+    model = LLM(
+        model="/root/models/glm4-9b-pt",
+        task="generate",
+        trust_remote_code=True,
+        dtype='float16',
+        gpu_memory_utilization=0.8,
+        max_model_len=40960
     )
     return model
 
