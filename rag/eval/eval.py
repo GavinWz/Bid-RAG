@@ -7,7 +7,7 @@ import pandas as pd
 from rag.config import Config
 from rag.eval.eval_data import create_vec_db
 from rag.rag_answer import RagModule
-from rag.utils import load_client, load_embedding_model, load_everything, load_model
+from rag.utils import load_client, load_embedding_model, load_everything
 
 
 def mrr_and_recall(all_results, all_questions):
@@ -48,6 +48,7 @@ def eval(embedding_model_name):
         chunk_overlap=1000,
         recall_threshold=0.2,
         topk=30
+        
     )
 
     embedding_model = load_embedding_model(config)
@@ -59,7 +60,7 @@ def eval(embedding_model_name):
 
     client.load_collection(config.collection_name)
 
-    df = pd.read_excel("eval_data.xlsx")
+    df = pd.read_excel("./eval_data.xlsx")
 
     all_results = []
     all_questions = []
@@ -102,11 +103,11 @@ def eval(embedding_model_name):
         all_questions.append(item)
         all_results.append(results)
 
-    with open(f'results/{embedding_model_name}', 'w') as f:
+    with open(f'./results/{embedding_model_name}', 'w') as f:
         f.write(str(mrr_and_recall(all_results, all_questions)))
 
 
 if __name__ == '__main__':
-    # eval("distiluse-base-multilingual-cased-v2")
+    eval("distiluse-base-multilingual-cased-v2")
     # eval("xiaobu-embedding-v2")
-    eval("Conan-embedding-v1")
+    # eval("multilingual-e5-large-instruct")

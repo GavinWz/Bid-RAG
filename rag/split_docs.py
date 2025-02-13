@@ -36,6 +36,8 @@ def read_docs(config: Config) -> List[Dict]:
                 if file_hash in hash_set:
                     logging.info(f"File {file_name} already exists in Milvus, skipping.")
                     continue
+                else:
+                    hash_set.add(file_hash)
                 file_path = os.path.join(root, file_name)
                 with open(file_path, "r", encoding="utf-8") as f:
                     result = re.search(r'^([0-9]+\-)+(.*).txt$', file_name)
@@ -48,7 +50,7 @@ def read_docs(config: Config) -> List[Dict]:
 
     os.makedirs(f"{config.db_dir}/{config.db_name}", exist_ok=True)
     with open(hash_file, 'w') as f:
-        f.write(str(hash_set))
+        json.dump(list(hash_set), f)
     return docs
 
 def create_splitter(config: Config) -> RecursiveCharacterTextSplitter:
@@ -140,7 +142,7 @@ def insert_vector_to_db(all_chunks, client, config: Config):
 
     collection_name=config.collection_name
     # 插入向量数据, 同时更新向量哈希表，避免添加重复数据
-    hash_file = f"{config.db_dir}/{collection_name}_hash"
+    hash_file = os.path.join(config.db_dir, config.db_name, f'{collection_name}_hash')
     hash_set = load_hash_set(hash_file)
     data = []
     for i in tqdm(range(len(all_chunks)), desc="Inserting chunks..."):
@@ -202,7 +204,7 @@ if __name__ == '__main__':
     vectorize(all_chunks, embedding_model)
 
     # ========== 4. 插入向量到数据库 ==========
-    client = MilvusClient(os.path.join(config.db_dir, config.db_name))
+    client = MilvusClient(os.path.join(config.db_dir, config.db_name, 'data.db'))
     insert_vector_to_db(all_chunks, client, config)
 
     # ========== 5. 创建索引 ==========
