@@ -15,7 +15,8 @@ def run():
     output = llm.generate("Hello, my name is")
     print(output)
 
-def open_ai_generate(messages, model="glm4-9b-pt", api_key="dummy", base_url="http://localhost:7100/v1", stream=True):
+def open_ai_generate(messages, model="glm4-9b-pt", api_key="dummy", base_url="http://localhost:7100/v1", stream=False):
+
     client = OpenAI(api_key=api_key, base_url=base_url)
     response = client.chat.completions.create(
         model=model,
@@ -24,11 +25,17 @@ def open_ai_generate(messages, model="glm4-9b-pt", api_key="dummy", base_url="ht
         stream=True
     )
     if stream:
-        for chunk in response:
-            if chunk.choices is not None and len(chunk.choices) > 0:
-                yield chunk.choices[0].delta.content
+        return response
     else:
         return response.choices[0].message.content
+
+
+def open_ai_generate_stream(messages, model="glm4-9b-pt", api_key="dummy", base_url="http://localhost:7100/v1"):
+    response = open_ai_generate(messages, model=model, api_key=api_key, base_url=base_url, stream=True)
+    for chunk in response:
+        if chunk.choices is not None and len(chunk.choices) > 0:
+            yield chunk.choices[0].delta.content
+
 
 
 if __name__ == '__main__':

@@ -2,18 +2,29 @@ from rag.config import Config
 from rag import rag_answer_new, config, sql_answer
 from langchain.agents import Tool, initialize_agent
 from langchain.memory import ConversationBufferMemory
-from rag.utils import load_everything, load_model
+from rag.utils import load_everything
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+# from openai import OpenAI
+# from langchain.llms import OpenAI
+from langchain_openai import OpenAI, ChatOpenAI
+
 
 class Agent:
     def __init__(self):
         self.config = Config()
-        config, model, client, embedding_model = load_everything()
-        self.rag_module = rag_answer_new.RagModule(config, model, client, embedding_model)
-        self.sql_module = sql_answer.SqlModule(config, model, client, embedding_model, self.rag_module)
-        self.model = load_model(config)
+        config, client, embedding_model = load_everything()
+        self.llm = OpenAI(api_key=config.api_key, base_url=config.base_url, model='glm4-9b')
+        self.llm = ChatOpenAI(
+            api_key="sk-SnDuQq9ZxxOgkMAq3d22C813034649D5A8E850D8C82a06Fa",
+            base_url="https://aihubmix.com/v1/",
+            model="gpt-4o",
+            streaming=True
+        )
 
-        rag_answer_func = lambda input: self.rag_module.answer_with_rag(input)
+        self.rag_module = rag_answer_new.RagModule(config, client, embedding_model)
+        self.sql_module = sql_answer.SqlModule(config, client, embedding_model, self.rag_module)
+
+        rag_answer_func = lambda input: self.rag_module.answer_with_rag(input, stream=False)
         sql_answer_func = lambda input: self.sql_module.answer_with_mysql(input)
 
         rag_answer_tool = Tool(name='Rag Answer Tool', func=rag_answer_func, 
@@ -38,7 +49,7 @@ class Agent:
     def answer_with_agent(self, query, chat_history, stream=True):
         agent = initialize_agent(
             self.tools,
-            self.model,
+            self.llm,
             agent="chat-conversational-react-description",
             verbose=True,
             handle_parsing_errors=True
@@ -52,8 +63,8 @@ class Agent:
 a = Agent()
 
 agent = initialize_agent(
-    a.tools, 
-    a.model, 
+    [],
+    a.llm,
     agent="chat-conversational-react-description", 
     verbose=True,
     handle_parsing_errors=True

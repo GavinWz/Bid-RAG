@@ -1,6 +1,7 @@
 # config.yaml
+# vllm serve  /root/models/glm-4-9b-chat/ --config rag/model_config.yaml
 
-served-model-name: "glm4-9b-pt"
+served-model-name: "glm4-9b"
 host: "0.0.0.0"
 port: 7100
 max-model-len: 40960

@@ -6,9 +6,8 @@ from rag.utils import load_everything
 
 
 class SqlModule():
-    def __init__(self, config, model, client, embedding_model, rag_module):
+    def __init__(self, config, client, embedding_model, rag_module):
         self.config = config
-        self.model = model
         self.client = client
         self.embedding_model = embedding_model
         self.rag_module = rag_module

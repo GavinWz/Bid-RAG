@@ -1,13 +1,11 @@
-
-
 import logging
 import os
 
 from langchain_ollama import ChatOllama
 from openai import OpenAI
-from pymilvus import MilvusClient
+from langchain_milvus import Milvus, Zilliz
 from sentence_transformers import SentenceTransformer
-from vllm import LLM
+from langchain_huggingface import HuggingFaceEmbeddings
 
 from rag.config import Config
 
@@ -16,24 +14,42 @@ def load_config():
     config = Config()
     return config
 
-def load_client(config):
-    client = MilvusClient(os.path.join(config.db_dir, config.db_name, "data.db"))
-    return client
 
 def load_embedding_model(config: Config):
     embedding_model_dir = config.embedding_model_dir
     embedding_model_name = config.embedding_model_name
     embedding_model_path = os.path.join(embedding_model_dir, embedding_model_name)
-    embedding_model = SentenceTransformer(embedding_model_path)
-    logging.info(f"Embedding model loaded successfully from {embedding_model_path}, "
-                 f"dimension: {embedding_model.get_sentence_embedding_dimension()}.")
+    embedding_model = HuggingFaceEmbeddings(
+        model_name=embedding_model_path,
+        model_kwargs={'device': 'cuda'}
+    )
+    logging.info(f"Embedding model loaded successfully from {embedding_model_path}.")
     return embedding_model
+
+
+def load_vec_db(config, embedding_model):
+    index_params = {
+        "field_name": "vector",  # 向量字段名称
+        "index_type": "HNSW",  # 索引类型
+        "index_name": "ivf_flat_index",  # 索引名称
+        "metric_type": "COSINE"
+    }
+    db_client = Milvus(
+        embedding_function=embedding_model,
+        collection_name=config.collection_name,
+        auto_id=True,
+        drop_old=True,  # 如果已存在同名 Collection，是否删除重建
+        index_params=index_params
+    )
+    return db_client
+
 
 def load_everything():
     config = load_config()
-    client = load_client(config)
+    db_client = load_vec_db(config)
     embedding_model = load_embedding_model(config)
-    return config, client, embedding_model
+    return config, db_client, embedding_model
+
 
 def concat_history(chat_history):
     if chat_history is None or len(chat_history) == 0:
@@ -45,7 +61,6 @@ def concat_history(chat_history):
 
 
 def open_ai_generate(messages, model="glm4-9b-pt", api_key="dummy", base_url="http://localhost:7100/v1", stream=False):
-
     client = OpenAI(api_key=api_key, base_url=base_url)
     response = client.chat.completions.create(
         model=model,

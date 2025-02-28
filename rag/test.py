@@ -1,14 +1,16 @@
-from sentence_transformers import SentenceTransformer
+import gradio as gr
+import time
 
-model = SentenceTransformer("TencentBAC/Conan-embedding-v1")
+def stream_response(message, history):
+    # 模拟流式生成，逐词返回
+    response = ""
+    for chunk in ["你好", "！", "我是", "流式", "聊天", "机器人。"]:
+        response += chunk
+        time.sleep(0.1)  # 模拟处理延迟
+        yield response
 
-sentences = [
-    "The weather is lovely today.",
-    "It's so sunny outside!",
-    "He drove to the stadium."
-]
-embeddings = model.encode(sentences)
-
-similarities = model.similarity(embeddings, embeddings)
-print(similarities.shape)
-# [3, 3]
+# 创建 ChatInterface 并启动
+gr.ChatInterface(
+    fn=stream_response,
+    title="流式聊天演示",
+).launch()

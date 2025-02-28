@@ -48,7 +48,6 @@ def eval(embedding_model_name):
         chunk_overlap=1000,
         recall_threshold=0.2,
         topk=30
-        
     )
 
     embedding_model = load_embedding_model(config)

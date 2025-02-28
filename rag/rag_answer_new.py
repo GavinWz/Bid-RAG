@@ -1,9 +1,8 @@
 from rag.utils import concat_history
 
 class RagModule():
-    def __init__(self, config, model, client, embedding_model):
+    def __init__(self, config, client, embedding_model):
         self.config = config
-        self.model = model
         self.client = client
         self.embedding_model = embedding_model
 
